@@ -30,6 +30,11 @@
         .keyword-container {
             margin-bottom: 20px;
         }
+        .input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
         .keyword-list {
             display: flex;
             flex-wrap: wrap;
@@ -57,17 +62,21 @@
             color: #003c8f;
         }
         input {
-            width: 100%;
+            flex: 1;
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            margin-bottom: 8px;
         }
         button {
             padding: 8px 16px;
             border-radius: 4px;
             border: none;
             cursor: pointer;
+        }
+        .add-button {
+            background: #4caf50;
+            color: white;
+            min-width: 80px;
         }
         .primary-button {
             background: #1976d2;
@@ -86,6 +95,13 @@
             margin-top: 16px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+        .recently-added {
+            animation: highlight 1s ease-out;
+        }
+        @keyframes highlight {
+            0% { background: #4caf50; color: white; }
+            100% { background: #e3f2fd; color: #1565c0; }
+        }
     </style>
 </head>
 <body>
@@ -94,24 +110,33 @@
             <h1>Image Prompt Generator</h1>
             <button class="outline-button" id="shareButton">Share Keywords</button>
         </div>
-        <p>Add keywords by typing and pressing Enter. Click X to remove keywords. Share your collection with others using the generated URL!</p>
+        <p>Add keywords by typing and clicking Add or pressing Enter. Click X to remove keywords. Share your collection with others using the generated URL!</p>
         
         <div class="grid">
             <div class="keyword-container">
                 <h3>Subjects (Nouns)</h3>
-                <input type="text" id="subjectInput" placeholder="Type and press Enter">
+                <div class="input-group">
+                    <input type="text" id="subjectInput" placeholder="Type and press Enter">
+                    <button class="add-button" onclick="keywordGenerator.addKeywordFromButton('subject')">Add</button>
+                </div>
                 <div class="keyword-list" id="subjectsList"></div>
             </div>
             
             <div class="keyword-container">
                 <h3>Verbs (Actions)</h3>
-                <input type="text" id="verbInput" placeholder="Type and press Enter">
+                <div class="input-group">
+                    <input type="text" id="verbInput" placeholder="Type and press Enter">
+                    <button class="add-button" onclick="keywordGenerator.addKeywordFromButton('verb')">Add</button>
+                </div>
                 <div class="keyword-list" id="verbsList"></div>
             </div>
             
             <div class="keyword-container">
                 <h3>Objects (Things)</h3>
-                <input type="text" id="objectInput" placeholder="Type and press Enter">
+                <div class="input-group">
+                    <input type="text" id="objectInput" placeholder="Type and press Enter">
+                    <button class="add-button" onclick="keywordGenerator.addKeywordFromButton('object')">Add</button>
+                </div>
                 <div class="keyword-list" id="objectsList"></div>
             </div>
         </div>
@@ -152,11 +177,20 @@
                 // Share button
                 document.getElementById('shareButton').addEventListener('click', () => this.share());
             }
+
+            addKeywordFromButton(type) {
+                const input = document.getElementById(`${type}Input`);
+                const keyword = input.value.trim();
+                if (keyword) {
+                    this.addKeyword(type, keyword);
+                    input.value = '';
+                }
+            }
             
             addKeyword(type, keyword) {
                 const listKey = type + 's';
                 this.keywords[listKey].push(keyword);
-                this.renderKeywordList(type);
+                this.renderKeywordList(type, this.keywords[listKey].length - 1);
             }
             
             removeKeyword(type, index) {
@@ -165,7 +199,7 @@
                 this.renderKeywordList(type);
             }
             
-            renderKeywordList(type) {
+            renderKeywordList(type, highlightIndex = -1) {
                 const listKey = type + 's';
                 const container = document.getElementById(`${type}sList`);
                 container.innerHTML = '';
@@ -173,10 +207,13 @@
                 this.keywords[listKey].forEach((keyword, index) => {
                     const tag = document.createElement('span');
                     tag.className = 'keyword-tag';
-                    tag.innerHTML = `
-                        ${keyword}
-                        <button onclick="keywordGenerator.removeKeyword('${type}', ${index})">×</button>
-                    `;
+                    if (index === highlightIndex) {
+                        tag.className += ' recently-added';
+                    }
+                    tag.innerHTML = \`
+                        \${keyword}
+                        <button onclick="keywordGenerator.removeKeyword('\${type}', \${index})">×</button>
+                    \`;
                     container.appendChild(tag);
                 });
             }
@@ -192,24 +229,24 @@
                 const randomVerb = this.getRandomItem(this.keywords.verbs);
                 const randomObject = this.getRandomItem(this.keywords.objects);
                 
-                const story = `In a magical holiday moment, a ${randomSubject} began to ${randomVerb} an enchanting ${randomObject}. The winter air sparkled with possibility as this festive scene unfolded into a heartwarming Christmas tale.`;
-                const prompt = `Magical Christmas scene of a ${randomSubject} ${randomVerb}ing a ${randomObject}, warm holiday lighting, snowy atmosphere, cinematic composition, photorealistic, 8k resolution`;
+                const story = \`In a magical holiday moment, a \${randomSubject} began to \${randomVerb} an enchanting \${randomObject}. The winter air sparkled with possibility as this festive scene unfolded into a heartwarming Christmas tale.\`;
+                const prompt = \`Magical Christmas scene of a \${randomSubject} \${randomVerb}ing a \${randomObject}, warm holiday lighting, snowy atmosphere, cinematic composition, photorealistic, 8k resolution\`;
                 
                 this.renderResults(story, prompt);
             }
             
             renderResults(story, prompt) {
                 const resultsDiv = document.getElementById('results');
-                resultsDiv.innerHTML = `
+                resultsDiv.innerHTML = \`
                     <div class="result-card">
                         <h3>Generated Story</h3>
-                        <p>${story}</p>
+                        <p>\${story}</p>
                     </div>
                     <div class="result-card">
                         <h3>Image Generation Prompt</h3>
-                        <p>${prompt}</p>
+                        <p>\${prompt}</p>
                     </div>
-                `;
+                \`;
             }
             
             getRandomItem(array) {
@@ -218,7 +255,7 @@
             
             share() {
                 const encodedData = btoa(JSON.stringify(this.keywords));
-                const shareUrl = `${window.location.origin}${window.location.pathname}?keywords=${encodedData}`;
+                const shareUrl = \`\${window.location.origin}\${window.location.pathname}?keywords=\${encodedData}\`;
                 
                 navigator.clipboard.writeText(shareUrl)
                     .then(() => alert('Share link copied to clipboard! Send this URL to collaborate with others.'))

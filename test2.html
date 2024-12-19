@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collaborative Image Prompt Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+        .keyword-section {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+        .keyword-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .keyword-tag {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 6px 10px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+        .keyword-tag button {
+            background: none;
+            border: none;
+            color: #1565c0;
+            margin-left: 8px;
+            cursor: pointer;
+        }
+        .keyword-tag button:hover {
+            color: #003c8f;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .primary-button {
+            background: #1976d2;
+            color: white;
+        }
+        .outline-button {
+            background: white;
+            border: 1px solid #1976d2;
+            color: #1976d2;
+        }
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Collaborative Image Prompt Generator</h1>
+            <button class="outline-button" id="shareButton">Share Keywords</button>
+        </div>
+
+        <div class="keyword-section">
+            <label for="subjectInput">Subjects (Nouns)</label>
+            <input type="text" id="subjectInput" placeholder="Type and press Enter">
+            <div class="keyword-list" id="subjectsList"></div>
+        </div>
+
+        <div class="keyword-section">
+            <label for="verbInput">Verbs (Actions)</label>
+            <input type="text" id="verbInput" placeholder="Type and press Enter">
+            <div class="keyword-list" id="verbsList"></div>
+        </div>
+
+        <div class="keyword-section">
+            <label for="objectInput">Objects (Things)</label>
+            <input type="text" id="objectInput" placeholder="Type and press Enter">
+            <div class="keyword-list" id="objectsList"></div>
+        </div>
+
+        <button class="primary-button" id="generateButton">Generate Story & Image Prompt</button>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        class KeywordGenerator {
+            constructor() {
+                this.keywords = { subjects: [], verbs: [], objects: [] };
+                this.initializeEventListeners();
+            }
+
+            initializeEventListeners() {
+                ['subject', 'verb', 'object'].forEach(type => {
+                    const input = document.getElementById(`${type}Input`);
+                    input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter' && input.value.trim()) {
+                            this.addKeyword(type, input.value.trim());
+                            input.value = '';
+                        }
+                    });
+                });
+
+                document.getElementById('generateButton').addEventListener('click', () => this.generatePrompt());
+            }
+
+            addKeyword(type, keyword) {
+                const key = `${type}s`;
+                if (!this.keywords[key].includes(keyword)) {
+                    this.keywords[key].push(keyword);
+                    this.renderKeywords(type);
+                }
+            }
+
+            renderKeywords(type) {
+                const key = `${type}s`;
+                const list = document.getElementById(`${key}List`);
+                list.innerHTML = '';
+                this.keywords[key].forEach(keyword => {
+                    const tag = document.createElement('div');
+                    tag.className = 'keyword-tag';
+                    tag.textContent = keyword;
+                    list.appendChild(tag);
+                });
+            }
+
+            generatePrompt() {
+                const subject = this.keywords.subjects[0] || 'a character';
+                const verb = this.keywords.verbs[0] || 'doing something';
+                const object = this.keywords.objects[0] || 'with an item';
+                alert(`${subject} + ${verb}.`)
+
+            }
+
+    </script>
+</body>
+</html>
